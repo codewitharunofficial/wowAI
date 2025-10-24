@@ -1,16 +1,20 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { Buffer } from 'buffer';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+global.Buffer = Buffer;
+
+
 
 import { useColorScheme } from '@/components/useColorScheme';
 
 export {
   // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
+  ErrorBoundary
 } from 'expo-router';
 
 export const unstable_settings = {
@@ -50,8 +54,15 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack screenOptions={{ headerBackButtonDisplayMode: "minimal" }} >
+        <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+        <Stack.Screen name="music-generation" options={{ title: "Music Generation" }} />
+        <Stack.Screen name="voiceover" options={{ title: "Voice Over" }} />
+        <Stack.Screen name="chat" options={{ title: 'Chat' }} />
+        <Stack.Screen name="dub" options={{ title: 'Dub' }} />
+        <Stack.Screen name="speech-to-text" options={{ title: 'Speech to Text' }} />
+        <Stack.Screen name="text-to-speech" options={{ title: 'Text to Speech' }} />
+        <Stack.Screen name="summerize" options={{ title: 'Summarize' }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
     </ThemeProvider>
