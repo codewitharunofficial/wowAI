@@ -18,12 +18,16 @@ export default function TextToSpeechScreen() {
         { label: 'British (Female)', value: 'en-GB-Female' },
         { label: 'English (Male)', value: 'en-US-Male' },
         { label: 'English (Female)', value: 'en-US-Female' },
-        { label: 'Hindi (Male)', value: 'hi-IN-Male' },
-        { label: 'Hindi (Female)', value: 'hi-IN-Female' },
+        { label: 'Hindi (Male)', value: 'hi-male' },
+        { label: 'Hindi (Female)', value: 'hi-female' },
     ];
 
     const player = useAudioPlayer(audioUrl, () => {
-        player.play();
+        if (player.isBuffering) {
+            setIsPlaying(false);
+        } else if (player.isPlaying) {
+            setIsPlaying(true);
+        }
     });
 
     const handleGenerate = async () => {
@@ -32,7 +36,7 @@ export default function TextToSpeechScreen() {
         setAudioUrl(null);
 
         try {
-            const res = await fetch(`http://172.26.57.166:3000/api/tts`, {
+            const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/tts`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text, voice: selectedVoice }),
