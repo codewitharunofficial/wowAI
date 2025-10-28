@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link } from 'expo-router';
 import React from 'react';
-import { Pressable } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -23,12 +23,17 @@ export default function DrawerLayout() {
   return (
     <Drawer
       screenOptions={{
-        drawerActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        drawerActiveTintColor: Colors[colorScheme ?? 'dark'].tint,
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
         headerShown: useClientOnlyValue(false, true),
-        drawerType: "front"
+        drawerType: "front",
+        drawerContentContainerStyle: { backgroundColor: "#ccc", height: "100%", width: "100%", paddingTop: 75 },
+        // drawerInactiveTintColor: "#888",
+        drawerAllowFontScaling: true,
+        drawerStatusBarAnimation: "fade"
       }}>
+
       <Drawer.Screen
         name="index"
         options={{
@@ -59,4 +64,16 @@ export default function DrawerLayout() {
       />
     </Drawer>
   );
+}
+
+function DrawerHeader() {
+  return (
+    <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: '#222', marginBottom: 10 }}>
+      <Ionicons name="logo-react" size={40} color="#61dafb" />
+      <View style={{ marginTop: 10 }}>
+        <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>Vocalify</Text>
+        <Text style={{ color: '#aaa', fontSize: 14 }}>AI Voice Solutions</Text>
+      </View>
+    </View>
+  )
 }

@@ -2,24 +2,24 @@ import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { Buffer } from 'buffer';
 import { useAudioPlayer } from 'expo-audio';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function TextToSpeechScreen() {
     const [text, setText] = useState('');
-    const [selectedVoice, setSelectedVoice] = useState('hi-IN-Male');
+    const [selectedVoice, setSelectedVoice] = useState('hi');
     const [loading, setLoading] = useState(false);
     const [audioUrl, setAudioUrl] = useState(null);
     const [sound, setSound] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
 
     const voices = [
-        { label: 'British (Male)', value: 'en-GB-Male' },
-        { label: 'British (Female)', value: 'en-GB-Female' },
-        { label: 'English (Male)', value: 'en-US-Male' },
-        { label: 'English (Female)', value: 'en-US-Female' },
-        { label: 'Hindi (Male)', value: 'hi-male' },
-        { label: 'Hindi (Female)', value: 'hi-female' },
+        { label: 'British (Male)', value: 'en' },
+        // { label: 'British (Female)', value: 'en-GB-Female' },
+        { label: 'English (Male)', value: 'en' },
+        // { label: 'English (Female)', value: 'en-US-Female' },
+        { label: 'Hindi (Male)', value: 'hi' },
+        // { label: 'Hindi (Female)', value: 'hi-female' },
     ];
 
     const player = useAudioPlayer(audioUrl, () => {
@@ -30,6 +30,14 @@ export default function TextToSpeechScreen() {
         }
     });
 
+    useEffect(() => {
+        if (!player.playing) {
+            setIsPlaying(false);
+        } else {
+            setIsPlaying(true);
+        }
+    }, [player.playing])
+
     const handleGenerate = async () => {
         if (!text.trim()) return;
         setLoading(true);
@@ -39,7 +47,7 @@ export default function TextToSpeechScreen() {
             const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/tts`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text, voice: selectedVoice }),
+                body: JSON.stringify({ text, language: selectedVoice }),
             });
 
             if (!res.ok) throw new Error('Failed to generate audio');
@@ -59,10 +67,12 @@ export default function TextToSpeechScreen() {
 
     const handlePlay = async () => {
         console.log(player.currentStatus)
-        if (player.isLoaded) {
+        if (player.isLoaded && player.currentStatus.playbackState) {
             player.play();
         }
     };
+
+    console.log(player.playing);
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
@@ -91,7 +101,7 @@ export default function TextToSpeechScreen() {
                         onValueChange={(itemValue) => setSelectedVoice(itemValue)}
                     >
                         {voices.map((v) => (
-                            <Picker.Item key={v.value} label={v.label} value={v.value} />
+                            <Picker.Item color='#fff' key={v.value} label={v.label} value={v.value} />
                         ))}
                     </Picker>
                 </View>
@@ -120,10 +130,10 @@ export default function TextToSpeechScreen() {
                         <Ionicons name={player.playing ? 'pause' : 'play'} size={24} color="#fff" />
                     </TouchableOpacity>
                     <View style={styles.audioInfo}>
-                        <Text style={styles.audioLabel}>Streamable Audio</Text>
-                        <Text style={styles.audioUrl} numberOfLines={1}>
+                        <Text style={styles.audioLabel}>Streamable Converted Audio</Text>
+                        {/* <Text style={styles.audioUrl} numberOfLines={1}>
                             {audioUrl}
-                        </Text>
+                        </Text> */}
                     </View>
                 </View>
             )}

@@ -16,6 +16,8 @@ const TextMessage = ({ content, isUser }) => {
         ]}
       >
         <Text
+          selectable={true}
+          selectionColor={'skyblue'}
           style={[
             styles.messageText,
             isUser ? styles.userText : styles.botText,

@@ -1,5 +1,6 @@
+import HomeCarousel from '@/components/HomeCaraousel';
 import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { ExternalPathString, RelativePathString, router } from 'expo-router';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -13,10 +14,15 @@ const features = [
     { id: 7, title: 'Music-Generation', icon: 'music-note', iconLib: MaterialIcons, color: '#10b981' },
 ];
 
+
+function onItemPress(path: RelativePathString | ExternalPathString) {
+    router.push(path);
+}
+
 export default function HomeScreen() {
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.scrollContainer}>
-            <Text style={styles.header}>Vocalify Labs</Text>
+            {/* <Text style={styles.header}>Vocalify Labs</Text> */}
 
             <View style={styles.grid}>
                 {features.map(({ id, title, icon, iconLib: Icon, color }) => (
@@ -32,6 +38,10 @@ export default function HomeScreen() {
                         <Text style={styles.cardTitle}>{title}</Text>
                     </TouchableOpacity>
                 ))}
+            </View>
+            <View style={{ paddingVertical: 10, }}>
+                <Text style={styles.header}>Explore More</Text>
+                <HomeCarousel onItemPress={onItemPress} />
             </View>
         </ScrollView>
     );

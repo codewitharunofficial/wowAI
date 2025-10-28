@@ -1,14 +1,14 @@
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
-const Summerize = () => {
+const models = () => {
   return (
     <View>
-      <Text>Summerize</Text>
+      <Text>models</Text>
     </View>
   )
 }
 
-export default Summerize
+export default models
 
 const styles = StyleSheet.create({})

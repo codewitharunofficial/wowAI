@@ -2,9 +2,12 @@ import AudioMessage from '@/components/AudioMessage';
 import ImageMessage from '@/components/ImageMessage';
 import TextMessage from '@/components/TextMessage';
 import VideoMessage from '@/components/VideoMessage';
+import { messageAI } from '@/constants/apiCalls';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
+    ActivityIndicator,
+    Dimensions,
     FlatList,
     KeyboardAvoidingView,
     Modal,
@@ -13,39 +16,34 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
+import "react-native-get-random-values";
+import { v4 as uuidv4 } from "uuid";
 
 export default function ChatScreen() {
-    const [messages, setMessages] = useState([
-        { id: '1', type: 'text', content: "Hey there! I'm ChatGPT 👋", isUser: false },
-    ]);
+    const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
+    const [generating, setGenerating] = useState(false);
+    const {height} = Dimensions.get("window");
 
-    const handleSend = () => {
-        if (!input.trim()) return;
-        const newMessage = {
-            id: Date.now().toString(),
-            type: 'text',
-            content: input.trim(),
-            isUser: true,
-        };
-        setMessages(prev => [...prev, newMessage]);
-        setInput('');
+    const handleSend = async () => {
+        try {
+            if (!input.trim()) return;
+            setGenerating(true);
+            messages.push({ id: uuidv4().toString(), type: 'text', role: "user", content: input.trim() });
+            const newMessage = await messageAI(input);
+            if (newMessage) {
+                messages.push({ id: uuidv4().toString(), type: 'text', role: "assistant", content: newMessage[0]?.message?.content })
+            }
+            setGenerating(false);
+            
+        } catch (error) {
+            console.log(error);
+            setGenerating(false);
 
-        // Simulate AI reply
-        setTimeout(() => {
-            setMessages(prev => [
-                ...prev,
-                {
-                    id: Date.now().toString(),
-                    type: 'text',
-                    content: "Interesting! Can you share an image or file?",
-                    isUser: false,
-                },
-            ]);
-        }, 1000);
+        }
     };
 
     const handleAttachmentSelect = (type) => {
@@ -76,14 +74,26 @@ export default function ChatScreen() {
             case 'audio':
                 return <AudioMessage content={item.content} isUser={item.isUser} />;
             default:
-                return <TextMessage content={item.content} isUser={item.isUser} />;
+                return <TextMessage content={item.content} isUser={item.role === "user" ? true : false} />;
         }
     };
 
+
+    const LoadingMessage = () => {
+        return (
+            <TouchableOpacity style={{display: 'flex', flexDirection: 'row', gap: 10, opacity: 0.5}} >
+                <Text style={{color: 'white'}} >Generating</Text>
+                <ActivityIndicator size={"small"} color={"white"} />
+            </TouchableOpacity>
+        )
+    }
+
     return (
+
         <KeyboardAvoidingView
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={height * 0.14}
         >
             {/* Chat area */}
             <FlatList
@@ -91,6 +101,7 @@ export default function ChatScreen() {
                 renderItem={renderMessage}
                 keyExtractor={item => item.id}
                 contentContainerStyle={styles.chatContainer}
+                ListFooterComponent={generating && <LoadingMessage />}
             />
 
             {/* Input area */}
@@ -164,6 +175,7 @@ export default function ChatScreen() {
                 </View>
             </Modal>
         </KeyboardAvoidingView>
+
     );
 }
 
