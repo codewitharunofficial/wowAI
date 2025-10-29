@@ -2,15 +2,16 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Buffer } from 'buffer';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 global.Buffer = Buffer;
 
 
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { getUser } from '@/constants/cachedDataCalls';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -51,6 +52,13 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const [user, setUser] = useState(null);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    getUser().then(user => user ? router.replace("/(drawer)") : router.replace("/auth"));
+  }, []);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -67,6 +75,7 @@ function RootLayoutNav() {
         <Stack.Screen name="voices" options={{ title: 'Voices' }} />
         <Stack.Screen name="models" options={{ title: 'Models' }} />
         <Stack.Screen name="testimonials" options={{ title: 'Testimonials' }} />
+        <Stack.Screen name='auth' options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );

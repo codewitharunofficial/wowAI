@@ -11,3 +11,8 @@ export const getCachedVoices = async () => {
     // console.log("Saved: ", voices);
     return voices;
 }
+
+export const getUser = async () => {
+    const user = JSON.parse(await AsyncStorage.getItem("auth")) || null;
+    return user;
+} 
