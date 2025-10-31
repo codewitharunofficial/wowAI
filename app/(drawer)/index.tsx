@@ -5,13 +5,13 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const features = [
-    { id: 1, title: 'Text-To-Speech', icon: 'volume-high', iconLib: Ionicons, color: '#3b82f6' },
-    { id: 2, title: 'Speech-To-Text', icon: 'keyboard-voice', iconLib: MaterialIcons, color: '#22c55e' },
-    { id: 3, title: 'Voiceover', icon: 'microphone-alt', iconLib: FontAwesome5, color: '#f97316' },
-    { id: 4, title: 'Dub', icon: 'translate', iconLib: MaterialIcons, color: '#eab308' },
-    { id: 5, title: 'Chat', icon: 'chatbubbles', iconLib: Ionicons, color: '#8b5cf6' },
-    { id: 6, title: 'Summarize', icon: 'summarize', iconLib: MaterialIcons, color: '#ec4899' },
-    { id: 7, title: 'Music-Generation', icon: 'music-note', iconLib: MaterialIcons, color: '#10b981' },
+    { id: 1, title: 'TTS', icon: 'volume-high', iconLib: Ionicons, color: '#3b82f6', path: 'text-to-speech' },
+    { id: 2, title: 'STT', icon: 'keyboard-voice', iconLib: MaterialIcons, color: '#22c55e', path: 'speech-to-text' },
+    { id: 3, title: 'Voiceover', icon: 'microphone-alt', iconLib: FontAwesome5, color: '#f97316', path: "voiceover" },
+    { id: 4, title: 'Dub', icon: 'translate', iconLib: MaterialIcons, color: '#eab308', path: "dub" },
+    { id: 5, title: 'Chat', icon: 'chatbubbles', iconLib: Ionicons, color: '#8b5cf6', path: "chat" },
+    { id: 6, title: 'Summarize', icon: 'summarize', iconLib: MaterialIcons, color: '#ec4899', path: "summarize" },
+    { id: 7, title: 'Music-Generation', icon: 'music-note', iconLib: MaterialIcons, color: '#10b981', path: "music-generation" },
 ];
 
 
@@ -21,16 +21,16 @@ function onItemPress(path: RelativePathString | ExternalPathString) {
 
 export default function HomeScreen() {
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContainer}>
+        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false} >
             {/* <Text style={styles.header}>Vocalify Labs</Text> */}
 
             <View style={styles.grid}>
-                {features.map(({ id, title, icon, iconLib: Icon, color }) => (
+                {features.map(({ id, title, icon, iconLib: Icon, color, path }) => (
                     <TouchableOpacity
                         key={id}
                         style={styles.card}
                         activeOpacity={0.8}
-                        onPress={() => router.push(`/${title.replace(/\s+/g, '').toLowerCase()}`)}
+                        onPress={() => router.push(`/${path}`)}
                     >
                         <View style={[styles.iconWrapper, { backgroundColor: color }]}>
                             <Icon name={icon} size={26} color="#fff" />

@@ -6,7 +6,7 @@ export const getVoices = async (page) => {
 
         const voices = await getCachedVoices();
 
-        if (voices) {
+        if (voices && voices?.voices?.length) {
             return { success: true, voices: voices };
         } else {
             const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/voices?page=${page}`);

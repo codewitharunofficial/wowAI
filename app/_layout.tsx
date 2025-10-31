@@ -12,6 +12,7 @@ global.Buffer = Buffer;
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { getUser } from '@/constants/cachedDataCalls';
+import { UserProvider } from '@/providers/User';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -61,22 +62,25 @@ function RootLayoutNav() {
   }, []);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerBackButtonDisplayMode: "minimal" }} >
-        <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-        <Stack.Screen name="music-generation" options={{ title: "Music Generation" }} />
-        <Stack.Screen name="voiceover" options={{ title: "Voice Over" }} />
-        <Stack.Screen name="chat" options={{ title: 'Chat' }} />
-        <Stack.Screen name="dub" options={{ title: 'Dub' }} />
-        <Stack.Screen name="speech-to-text" options={{ title: 'Speech to Text' }} />
-        <Stack.Screen name="text-to-speech" options={{ title: 'Text to Speech' }} />
-        <Stack.Screen name="summarize" options={{ title: 'Summarize' }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: false }} />
-        <Stack.Screen name="voices" options={{ title: 'Voices' }} />
-        <Stack.Screen name="models" options={{ title: 'Models' }} />
-        <Stack.Screen name="testimonials" options={{ title: 'Testimonials' }} />
-        <Stack.Screen name='auth' options={{ headerShown: false }} />
-      </Stack>
-    </ThemeProvider>
+    <UserProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack screenOptions={{ headerBackButtonDisplayMode: "minimal" }} >
+          <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+          <Stack.Screen name="music-generation" options={{ title: "Music Generation" }} />
+          <Stack.Screen name="voiceover" options={{ title: "Voice Over" }} />
+          <Stack.Screen name="chat" options={{ title: 'Chat' }} />
+          <Stack.Screen name="dub" options={{ title: 'Dub' }} />
+          <Stack.Screen name="speech-to-text" options={{ title: 'Speech to Text' }} />
+          <Stack.Screen name="text-to-speech" options={{ title: 'Text to Speech' }} />
+          <Stack.Screen name="summarize" options={{ title: 'Summarize' }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: false }} />
+          <Stack.Screen name="voices" options={{ title: 'Voices' }} />
+          <Stack.Screen name="models" options={{ title: 'Models' }} />
+          <Stack.Screen name="testimonials" options={{ title: 'Testimonials' }} />
+          <Stack.Screen name='auth' options={{ headerShown: false }} />
+          <Stack.Screen name='profile' options={{ headerShown: false, presentation: "modal" }} />
+        </Stack>
+      </ThemeProvider>
+    </UserProvider>
   );
 }

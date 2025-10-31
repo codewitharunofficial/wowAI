@@ -9,6 +9,7 @@ import {
     ActivityIndicator,
     Dimensions,
     FlatList,
+    Keyboard,
     KeyboardAvoidingView,
     Modal,
     Platform,
@@ -26,19 +27,22 @@ export default function ChatScreen() {
     const [input, setInput] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [generating, setGenerating] = useState(false);
-    const {height} = Dimensions.get("window");
+    const { height } = Dimensions.get("window");
 
     const handleSend = async () => {
         try {
             if (!input.trim()) return;
             setGenerating(true);
-            messages.push({ id: uuidv4().toString(), type: 'text', role: "user", content: input.trim() });
+            let text = input.trim();
+            setInput("");
+            Keyboard.dismiss();
+            messages.push({ id: uuidv4().toString(), type: 'text', role: "user", content: text });
             const newMessage = await messageAI(input);
             if (newMessage) {
                 messages.push({ id: uuidv4().toString(), type: 'text', role: "assistant", content: newMessage[0]?.message?.content })
             }
             setGenerating(false);
-            
+
         } catch (error) {
             console.log(error);
             setGenerating(false);
@@ -81,8 +85,8 @@ export default function ChatScreen() {
 
     const LoadingMessage = () => {
         return (
-            <TouchableOpacity style={{display: 'flex', flexDirection: 'row', gap: 10, opacity: 0.5}} >
-                <Text style={{color: 'white'}} >Generating</Text>
+            <TouchableOpacity style={{ display: 'flex', flexDirection: 'row', gap: 10, opacity: 0.5 }} >
+                <Text style={{ color: 'white' }} >Generating</Text>
                 <ActivityIndicator size={"small"} color={"white"} />
             </TouchableOpacity>
         )

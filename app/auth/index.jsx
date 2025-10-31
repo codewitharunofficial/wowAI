@@ -1,112 +1,206 @@
-import { Ionicons } from '@expo/vector-icons';
-import * as Google from "expo-auth-session/providers/google";
-import * as Constants from "expo-constants";
-import React, { useState } from 'react';
+import { useUser } from "@/providers/User";
+import { router } from "expo-router";
+import React, { useRef, useState } from "react";
 import {
     Image,
+    KeyboardAvoidingView,
     Platform,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
-    View,
-} from 'react-native';
+    View
+} from "react-native";
 
 export default function AuthScreen() {
-    const [isLogin, setIsLogin] = useState(true);
+    const [email, setEmail] = useState("");
+    const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+    const [step, setStep] = useState("email"); // "email" or "otp"
+    const [loading, setLoading] = useState(false);
 
-    const [request, response, promptAsync] = Google.useAuthRequest({
-        androidClientId: Constants.expoConfig?.extra?.googleSignIn?.androidClientId,
-        clientId: Constants.expoConfig?.extra?.googleSignIn?.webClientId,
-        iosClientId: Constants.expoConfig?.extra?.googleSignIn.iosClientId,
-        redirectUri: `com.codewitharun.vocalify:/auth`,
-        scopes: ["profile", "email", "openid"],
-        usePKCE: true,
-    });
+    const { login } = useUser();
 
-    const handleGoogleSignIn = async () => {
-        console.log('Sign in with Google');
-        // integrate expo-auth-session or firebase auth here
+    const otpRefs = useRef([]);
+
+    const handleEmailSubmit = async () => {
+        if (!email.trim() || !email.includes("@")) {
+            alert("Please enter a valid email address");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const res = await fetch("http://172.20.10.5:3000/api/send-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                setStep("otp");
+                otpRefs.current[0]?.focus();
+            } else {
+                alert(data.message || "Failed to send OTP");
+            }
+        } catch (e) {
+            alert("Error sending OTP");
+            console.log(e?.message)
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleAppleSignIn = async () => {
-        console.log('Sign in with Apple');
-        // integrate expo-apple-authentication here
+    const handleOtpSubmit = async (codeParam) => {
+        const code = codeParam || otp.join("");
+        if (code.length !== 6) {
+            alert("Please enter a valid OTP");
+            return;
+        }
+
+        try {
+            const res = await fetch("http://172.20.10.5:3000/api/verify-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, otp: code }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                login(data?.user);
+                alert("Login successful!");
+                router.replace("/(drawer)")
+            } else {
+                alert(data.message || "Invalid OTP");
+            }
+        } catch {
+            alert("Error verifying OTP");
+        }
     };
+
+
+    const handleOtpChange = (text, index) => {
+        if (text.length > 1) return;
+        const newOtp = [...otp];
+        newOtp[index] = text;
+        setOtp(newOtp);
+
+        if (text && index < otpRefs.current.length - 1) {
+            otpRefs.current[index + 1].focus();
+        }
+
+        // Auto-submit if all 6 digits filled
+        if (newOtp.every((digit) => digit !== "")) {
+            handleOtpSubmit(newOtp.join(""));
+        }
+    };
+
+    const handleOtpKeyPress = (e, index) => {
+        if (e.nativeEvent.key === "Backspace" && otp[index] === "" && index > 0) {
+            otpRefs.current[index - 1].focus();
+        }
+    };
+
+    const handleChangeEmail = async () => {
+
+    }
 
     return (
-        <View style={styles.container}>
-            {/* Logo + Welcome */}
+        <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
             <View style={styles.header}>
                 <Image
                     source={{
-                        uri: 'https://cdn-icons-png.flaticon.com/512/4712/4712100.png',
+                        uri: "https://cdn-icons-png.flaticon.com/512/4712/4712100.png",
                     }}
                     style={styles.logo}
                 />
                 <Text style={styles.title}>Welcome to WoW AI Studio</Text>
                 <Text style={styles.subtitle}>
-                    {isLogin
-                        ? 'Sign in to continue your creative journey'
-                        : 'Create an account to get started'}
+                    {step === "email"
+                        ? "Sign in with your email to continue"
+                        : `Enter the 6-digit code sent to ${email}`}
                 </Text>
             </View>
 
-            {/* Auth Card */}
             <View style={styles.card}>
-                {/* Google */}
-                <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
-                    <Ionicons name="logo-google" size={22} color="#fff" style={styles.icon} />
-                    <Text style={styles.buttonText}>Continue with Google</Text>
-                </TouchableOpacity>
+                {step === "email" ? (
+                    <>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Enter your email"
+                            placeholderTextColor="#94a3b8"
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            value={email}
+                            onChangeText={setEmail}
+                        />
 
-                {/* Apple (only iOS) */}
-                {Platform.OS === 'ios' && (
-                    <TouchableOpacity style={styles.appleButton} onPress={handleAppleSignIn}>
-                        <Ionicons name="logo-apple" size={24} color="#fff" style={styles.icon} />
-                        <Text style={styles.buttonText}>Continue with Apple</Text>
-                    </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.button, loading && { opacity: 0.6 }]}
+                            onPress={handleEmailSubmit}
+                            disabled={loading}
+                        >
+                            <Text style={styles.buttonText}>
+                                {loading ? "Sending..." : "Continue"}
+                            </Text>
+                        </TouchableOpacity>
+                    </>
+                ) : (
+                    <>
+                        <View style={styles.otpContainer}>
+                            {otp.map((digit, index) => (
+                                <TextInput
+                                    key={index}
+                                    ref={(ref) => (otpRefs.current[index] = ref)}
+                                    style={styles.otpInput}
+                                    keyboardType="number-pad"
+                                    maxLength={1}
+                                    value={digit}
+                                    onChangeText={(text) => handleOtpChange(text, index)}
+                                    onKeyPress={(e) => handleOtpKeyPress(e, index)}
+                                />
+                            ))}
+                        </View>
+
+                        <TouchableOpacity
+                            style={[styles.button, { marginTop: 20 }]}
+                            onPress={() => handleOtpSubmit()}
+                        >
+                            <Text style={styles.buttonText}>Verify OTP</Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.otpActions}>
+                            <TouchableOpacity onPress={handleEmailSubmit}>
+                                <Text style={styles.resendText}>Resend OTP</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={handleChangeEmail}>
+                                <Text style={styles.changeEmailText}>Change Email</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </>
                 )}
-
-                {/* Divider */}
-                <View style={styles.dividerContainer}>
-                    <View style={styles.line} />
-                    <Text style={styles.orText}>or</Text>
-                    <View style={styles.line} />
-                </View>
-
-                {/* Switch between Login / Signup */}
-                <TouchableOpacity
-                    style={styles.switchButton}
-                    onPress={() => setIsLogin((prev) => !prev)}
-                >
-                    <Text style={styles.switchText}>
-                        {isLogin
-                            ? "Don't have an account? "
-                            : 'Already have an account? '}
-                        <Text style={styles.linkText}>{isLogin ? 'Sign Up' : 'Log In'}</Text>
-                    </Text>
-                </TouchableOpacity>
             </View>
 
-            {/* Footer */}
             <Text style={styles.footer}>
-                By continuing, you agree to our <Text style={styles.link}>Terms</Text> &{' '}
+                By continuing, you agree to our <Text style={styles.link}>Terms</Text> &{" "}
                 <Text style={styles.link}>Privacy Policy</Text>.
             </Text>
-        </View>
+        </KeyboardAvoidingView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0f172a',
-        alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor: "#0f172a",
+        alignItems: "center",
+        justifyContent: "center",
         padding: 24,
     },
     header: {
-        alignItems: 'center',
+        alignItems: "center",
         marginBottom: 40,
     },
     logo: {
@@ -116,96 +210,90 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     title: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 26,
-        fontWeight: '700',
+        fontWeight: "700",
     },
     subtitle: {
-        color: '#94a3b8',
+        color: "#94a3b8",
         fontSize: 15,
-        textAlign: 'center',
+        textAlign: "center",
         marginTop: 4,
         maxWidth: 260,
     },
     card: {
-        backgroundColor: '#1e293b',
+        backgroundColor: "#1e293b",
         borderRadius: 20,
-        width: '100%',
+        width: "100%",
         paddingVertical: 28,
         paddingHorizontal: 20,
         elevation: 6,
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOpacity: 0.25,
         shadowRadius: 8,
-        alignItems: 'center',
+        alignItems: "center",
     },
-    googleButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#2563eb',
-        paddingVertical: 12,
-        paddingHorizontal: 20,
+    input: {
+        backgroundColor: "#334155",
+        color: "#fff",
+        width: "100%",
         borderRadius: 14,
-        width: '100%',
-        justifyContent: 'center',
-        marginBottom: 14,
+        padding: 14,
+        fontSize: 16,
+        marginBottom: 16,
     },
-    appleButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#111827',
+    button: {
+        backgroundColor: "#2563eb",
         paddingVertical: 12,
-        paddingHorizontal: 20,
         borderRadius: 14,
-        width: '100%',
-        justifyContent: 'center',
-        marginBottom: 14,
-    },
-    icon: {
-        marginRight: 8,
+        width: "100%",
+        alignItems: "center",
     },
     buttonText: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: "600",
     },
-    dividerContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 18,
-        width: '90%',
-        justifyContent: 'center',
+    otpContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        width: "100%",
     },
-    line: {
-        flex: 1,
-        height: 1,
-        backgroundColor: '#334155',
+    otpInput: {
+        backgroundColor: "#334155",
+        color: "#fff",
+        fontSize: 20,
+        fontWeight: "600",
+        textAlign: "center",
+        borderRadius: 10,
+        width: 45,
+        height: 55,
     },
-    orText: {
-        color: '#64748b',
-        marginHorizontal: 8,
+    otpActions: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        width: "100%",
+        marginTop: 16,
+    },
+    resendText: {
+        color: "#60a5fa",
         fontSize: 14,
+        fontWeight: "500",
     },
-    switchButton: {
-        marginTop: 4,
-    },
-    switchText: {
-        color: '#94a3b8',
+    changeEmailText: {
+        color: "#f87171",
         fontSize: 14,
-    },
-    linkText: {
-        color: '#60a5fa',
-        fontWeight: '600',
+        fontWeight: "500",
     },
     footer: {
-        color: '#64748b',
+        color: "#64748b",
         fontSize: 12,
-        textAlign: 'center',
-        position: 'absolute',
+        textAlign: "center",
+        position: "absolute",
         bottom: 20,
-        width: '100%',
+        width: "100%",
     },
     link: {
-        color: '#60a5fa',
+        color: "#60a5fa",
     },
 });

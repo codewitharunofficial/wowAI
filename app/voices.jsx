@@ -49,7 +49,7 @@ export default function ExploreVoices() {
   };
 
   useEffect(() => {
-    getVoices().then((data) => { console.log(data); data?.voices?.length > 0 && setVoices(data.voices) }).catch((error) => console.error('Error fetching voices:', error));
+    getVoices().then((data) => { console.log(data); data?.voices?.length > 0 && setVoices(data?.voices) }).catch((error) => console.error('Error fetching voices:', error));
   }, []);
 
   const renderVoice = ({ item }) => {

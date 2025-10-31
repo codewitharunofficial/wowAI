@@ -7,9 +7,9 @@ export const cacheVoices = async (voices) => {
 
 
 export const getCachedVoices = async () => {
-    const voices = JSON.parse(await AsyncStorage.getItem('voices') || []);
-    // console.log("Saved: ", voices);
-    return voices;
+    let voices = await AsyncStorage.getItem('voices');
+    voices = JSON.parse(voices)
+    return voices?.voices?.length > 0 ? voices : [];
 }
 
 export const getUser = async () => {

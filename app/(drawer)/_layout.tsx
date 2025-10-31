@@ -1,11 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link } from 'expo-router';
-import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Pressable, View } from 'react-native';
 
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { useUser } from '@/providers/User';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Drawer } from 'expo-router/drawer';
 
@@ -19,6 +20,14 @@ function DrawerIcon(props: {
 
 export default function DrawerLayout() {
   const colorScheme = useColorScheme();
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const { getUser } = useUser();
+
+  useEffect(() => {
+    getUser().then(data => data && setIsLoggedIn(true));
+  }, []);
 
   return (
     <Drawer
@@ -40,18 +49,7 @@ export default function DrawerLayout() {
           title: 'Home',
           drawerIcon: ({ color }) => <DrawerIcon name="home" color={color} />,
           headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
+            <HeaderRight isLoggedIn={isLoggedIn} />
           ),
         }}
       />
@@ -66,14 +64,40 @@ export default function DrawerLayout() {
   );
 }
 
-function DrawerHeader() {
+function HeaderRight({ isLoggedIn }) {
+
+  const colorScheme = useColorScheme();
+
   return (
-    <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: '#222', marginBottom: 10 }}>
-      <Ionicons name="logo-react" size={40} color="#61dafb" />
-      <View style={{ marginTop: 10 }}>
-        <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>Vocalify</Text>
-        <Text style={{ color: '#aaa', fontSize: 14 }}>AI Voice Solutions</Text>
-      </View>
+    <View style={{ flexDirection: 'row', gap: 5 }}>
+      {
+        isLoggedIn && (
+          <Link href="/profile" asChild>
+            <Pressable>
+              {({ pressed }) => (
+                <FontAwesome
+                  name="user"
+                  size={25}
+                  color={Colors[colorScheme ?? "dark"].tint}
+                  style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+                />
+              )}
+            </Pressable>
+          </Link>
+        )
+      }
+      <Link href="/modal" asChild>
+        <Pressable>
+          {({ pressed }) => (
+            <FontAwesome
+              name="info-circle"
+              size={25}
+              color={Colors[colorScheme ?? "dark"].tint}
+              style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+            />
+          )}
+        </Pressable>
+      </Link>
     </View>
   )
 }
