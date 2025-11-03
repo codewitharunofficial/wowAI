@@ -23,11 +23,12 @@ import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 
 export default function ChatScreen() {
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState([{ id: uuidv4().toString(), type: 'text', role: "assistant", content: "Hey! How May I Help You?" }]);
     const [input, setInput] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [generating, setGenerating] = useState(false);
     const { height } = Dimensions.get("window");
+    const [error, setError] = useState("")
 
     const handleSend = async () => {
         try {
@@ -36,16 +37,18 @@ export default function ChatScreen() {
             let text = input.trim();
             setInput("");
             Keyboard.dismiss();
+            messages.pop();
             messages.push({ id: uuidv4().toString(), type: 'text', role: "user", content: text });
             const newMessage = await messageAI(input);
             if (newMessage) {
-                messages.push({ id: uuidv4().toString(), type: 'text', role: "assistant", content: newMessage[0]?.message?.content })
+                messages.push({ id: uuidv4().toString(), type: 'text', role: "assistant", content: newMessage })
             }
             setGenerating(false);
 
         } catch (error) {
             console.log(error);
             setGenerating(false);
+            messages.push({ id: uuidv4().toString(), type: 'text', role: "assistant", content: "Something went wrong! Unable to generate AI response right now, Please try again later." })
 
         }
     };
@@ -197,7 +200,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#1e293b',
         paddingHorizontal: 10,
-        paddingVertical: 8,
+        paddingVertical: 10,
         borderTopWidth: 1,
         borderTopColor: '#334155',
     },

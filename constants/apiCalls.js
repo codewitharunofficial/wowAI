@@ -27,27 +27,27 @@ export const messageAI = async (text) => {
 
     const options = {
         method: 'POST',
-        url: 'https://chat-gpt26.p.rapidapi.com/',
+        url: 'https://chatgpt-42.p.rapidapi.com/gpt4',
         headers: {
             'x-rapidapi-key': process.env.EXPO_PUBLIC_CHAT_API_KEY,
-            'x-rapidapi-host': 'chat-gpt26.p.rapidapi.com',
+            'x-rapidapi-host': 'chatgpt-42.p.rapidapi.com',
             'Content-Type': 'application/json'
         },
         data: {
-            model: 'GPT-5-mini',
             messages: [
                 {
                     role: 'user',
                     content: text
                 }
-            ]
+            ],
+            web_access: false
         }
     };
 
     const { data } = await axios.request(options);
 
-    console.log(data?.choices);
+    console.log(data?.result);
 
-    return data?.choices || [];
+    return data?.result || [];
 
 }
