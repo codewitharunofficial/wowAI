@@ -1,13 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+    Animated,
     Dimensions,
-    FlatList,
     ImageBackground,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -34,13 +34,25 @@ const items = [
         title: '💬 Testimonials',
         description: 'Hear what creators and developers say about this app.',
         icon: 'chatbubble-ellipses-outline',
-        bg: 'https://images.unsplash.com/photo-1515169067865-5387ec356754?auto=format&w=1080&q=80',
+        bg: { uri: 'https://images.unsplash.com/photo-1515169067865-5387ec356754?auto=format&w=1080&q=80' },
         path: 'testimonials',
     },
 ];
 
 export default function HomeCarousel({ onItemPress }) {
     const flatListRef = useRef(null);
+    const scrollX = useRef(new Animated.Value(0)).current;
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    // Auto-scroll logic
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const nextIndex = (currentIndex + 1) % items.length;
+            flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+            setCurrentIndex(nextIndex);
+        }, 4000);
+        return () => clearInterval(interval);
+    }, [currentIndex]);
 
     const renderItem = ({ item }) => (
         <TouchableOpacity
@@ -49,7 +61,7 @@ export default function HomeCarousel({ onItemPress }) {
             activeOpacity={0.9}
         >
             <ImageBackground
-                source={{ uri: item.bg }}
+                source={item.bg}
                 style={styles.cardBackground}
                 imageStyle={styles.cardImage}
                 blurRadius={2}
@@ -65,7 +77,7 @@ export default function HomeCarousel({ onItemPress }) {
 
     return (
         <View style={styles.carouselContainer}>
-            <FlatList
+            <Animated.FlatList
                 ref={flatListRef}
                 data={items}
                 keyExtractor={(item) => item.id}
@@ -75,20 +87,47 @@ export default function HomeCarousel({ onItemPress }) {
                 pagingEnabled
                 snapToAlignment="center"
                 decelerationRate="fast"
+                onScroll={Animated.event(
+                    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                    { useNativeDriver: false }
+                )}
+                scrollEventThrottle={16}
             />
+
+            {/* Pagination Dots */}
+            <View style={styles.pagination}>
+                {items.map((_, i) => {
+                    const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
+                    const dotWidth = scrollX.interpolate({
+                        inputRange,
+                        outputRange: [8, 16, 8],
+                        extrapolate: 'clamp',
+                    });
+                    const opacity = scrollX.interpolate({
+                        inputRange,
+                        outputRange: [0.4, 1, 0.4],
+                        extrapolate: 'clamp',
+                    });
+                    return (
+                        <Animated.View
+                            key={i.toString()}
+                            style={[styles.dot, { width: dotWidth, opacity }]}
+                        />
+                    );
+                })}
+            </View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     carouselContainer: {
-        width: width * 0.9,
+        width: width,
         height: 200,
         marginBottom: 20,
     },
     cardContainer: {
-        width: width * 0.85,
-        marginHorizontal: width * 0.025,
+        width,
         borderRadius: 16,
         overflow: 'hidden',
         elevation: 4,
@@ -98,7 +137,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     cardImage: {
+        width: width,
         borderRadius: 16,
+        objectFit: 'fill'
     },
     overlay: {
         backgroundColor: 'rgba(0,0,0,0.45)',
@@ -109,7 +150,7 @@ const styles = StyleSheet.create({
     },
     title: {
         color: '#fff',
-        fontSize: 20,
+        fontSize: 22,
         fontWeight: '700',
         marginBottom: 5,
         textAlign: 'center',
@@ -118,5 +159,17 @@ const styles = StyleSheet.create({
         color: '#e2e8f0',
         fontSize: 14,
         textAlign: 'center',
+    },
+    pagination: {
+        flexDirection: 'row',
+        position: 'absolute',
+        bottom: 10,
+        alignSelf: 'center',
+    },
+    dot: {
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#fff',
+        marginHorizontal: 4,
     },
 });

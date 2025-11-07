@@ -20,8 +20,13 @@ export default function ProfileScreen() {
 
             {/* Profile Card */}
             <View style={styles.profileCard}>
-                {user?.photoURL ? (
-                    <Image source={{ uri: user.photoURL }} style={styles.avatar} />
+                {user ? (
+                    <Image
+                        source={{
+                            uri: "https://cdn-icons-png.flaticon.com/512/4712/4712100.png",
+                        }}
+                        style={styles.avatar}
+                    />
                 ) : (
                     <View style={styles.avatarPlaceholder}>
                         <Ionicons name="person-circle-outline" size={80} color="#94a3b8" />
@@ -49,7 +54,7 @@ export default function ProfileScreen() {
             </View>
 
             {/* Logout Button */}
-            <TouchableOpacity style={styles.logoutButton} onPress={() => {logout; router.replace("/auth")}}>
+            <TouchableOpacity style={styles.logoutButton} onPress={() => { logout; router.replace("/auth") }}>
                 <Ionicons name="log-out-outline" size={20} color="#fff" />
                 <Text style={styles.logoutText}>Logout</Text>
             </TouchableOpacity>

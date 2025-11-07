@@ -9,10 +9,10 @@ export const cacheVoices = async (voices) => {
 export const getCachedVoices = async () => {
     let voices = await AsyncStorage.getItem('voices');
     voices = JSON.parse(voices)
-    return voices?.voices?.length > 0 ? voices : [];
+    return voices?.voices?.length > 0 ? voices?.voices : [];
 }
 
 export const getUser = async () => {
     const user = JSON.parse(await AsyncStorage.getItem("auth")) || null;
     return user;
-} 
+}

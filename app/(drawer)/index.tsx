@@ -1,7 +1,8 @@
 import HomeCarousel from '@/components/HomeCaraousel';
+import socketServcies from '@/constants/SocketServices';
 import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { ExternalPathString, RelativePathString, router } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const features = [
@@ -20,6 +21,14 @@ function onItemPress(path: RelativePathString | ExternalPathString) {
 }
 
 export default function HomeScreen() {
+
+    useEffect(() => {
+        socketServcies.initializeSocket();
+        // socketServcies.on('say-hi', async () => {
+        //     console.log("Hi");
+        // })
+    }, [])
+
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false} >
             {/* <Text style={styles.header}>Vocalify Labs</Text> */}
@@ -54,19 +63,20 @@ const styles = StyleSheet.create({
     },
     scrollContainer: {
         paddingVertical: 30,
-        paddingHorizontal: 16,
+        paddingHorizontal: 0,
     },
     header: {
         fontSize: 26,
         fontWeight: '700',
         color: '#fff',
-        marginBottom: 24,
+        marginBottom: 20,
         textAlign: 'center',
     },
     grid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
+        paddingHorizontal: 10
     },
     card: {
         width: '30%',

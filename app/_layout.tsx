@@ -77,6 +77,7 @@ function RootLayoutNav() {
           <Stack.Screen name="voices" options={{ title: 'Voices' }} />
           <Stack.Screen name="models" options={{ title: 'Models' }} />
           <Stack.Screen name="testimonials" options={{ title: 'Testimonials' }} />
+          <Stack.Screen name="messages" options={{ title: 'AI Chat' }} />
           <Stack.Screen name='auth' options={{ headerShown: false }} />
           <Stack.Screen name='profile' options={{ headerShown: false, presentation: "modal" }} />
         </Stack>

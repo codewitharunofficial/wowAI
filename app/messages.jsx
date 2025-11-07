@@ -1,13 +1,13 @@
-import ChatsList from '@/components/ChatsList'
+import ChatScreen from '@/components/ChatScreen'
 import React from 'react'
 import { StyleSheet } from 'react-native'
 
-const Chat = () => {
+const Messages = () => {
     return (
-        <ChatsList />
+        <ChatScreen />
     )
 }
 
-export default Chat
+export default Messages
 
 const styles = StyleSheet.create({})

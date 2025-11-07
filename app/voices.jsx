@@ -31,7 +31,7 @@ export default function ExploreVoices() {
       setLoading(true);
       console.log(voice.previewUrl);
       const sound = new Audio.Sound();
-      await sound.loadAsync({uri: voice.previewUrl});
+      await sound.loadAsync({ uri: voice.previewUrl });
       if (sound._loaded) {
         await sound.playAsync();
         playerRef.current = sound;
@@ -49,7 +49,7 @@ export default function ExploreVoices() {
   };
 
   useEffect(() => {
-    getVoices().then((data) => { console.log(data); data?.voices?.length > 0 && setVoices(data?.voices) }).catch((error) => console.error('Error fetching voices:', error));
+    getVoices().then((data) => { console.log(data); setVoices(data) }).catch((error) => console.error('Error fetching voices:', error));
   }, []);
 
   const renderVoice = ({ item }) => {
@@ -129,13 +129,20 @@ export default function ExploreVoices() {
         />
       </View>
 
-      <FlatList
-        data={voices}
-        keyExtractor={(item) => item.voiceId}
-        renderItem={renderVoice}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-      />
+      {
+        voices?.length > 0 ? (
+          <FlatList
+            data={voices}
+            keyExtractor={(item) => item.voiceId}
+            renderItem={renderVoice}
+            contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
+          />
+        ) : (
+
+          <ActivityIndicator size={"large"} color={"#fff"} />
+        )
+      }
     </View>
   );
 }
