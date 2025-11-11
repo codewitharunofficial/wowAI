@@ -28,8 +28,7 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
-      "package": "com.codewitharun.vocalify",
-      "googleServicesFile": "./google-services.json"
+      "package": "com.codewitharun.vocalify"
     },
     "web": {
       "output": "static",
@@ -43,11 +42,6 @@
       "router": {},
       "eas": {
         "projectId": "ebb2ccc8-a278-40f2-ab39-5d27000534b1"
-      },
-      "googleSignIn": {
-        "iosClientId": "719804570152-l1qlkhpie8i2s8rjc09i9i53a9su2mve.apps.googleusercontent.com",
-        "androidClientId": "719804570152-m0s7ugg9e2l118o3j6f0gd4bmkbovj3u.apps.googleusercontent.com",
-        "webClientId": "719804570152-ov4cfrpa2vgek690ff3puf1jgvfqcj8r.apps.googleusercontent.com"
       }
     }
   }

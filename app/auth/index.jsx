@@ -30,7 +30,7 @@ export default function AuthScreen() {
 
         setLoading(true);
         try {
-            const res = await fetch("http://172.20.10.5:3000/api/send-otp", {
+            const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/send-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),
@@ -58,12 +58,13 @@ export default function AuthScreen() {
         }
 
         try {
-            const res = await fetch("http://172.20.10.5:3000/api/verify-otp", {
+            const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/verify-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, otp: code }),
             });
             const data = await res.json();
+            console.log(data);
             if (data.success) {
                 login(data?.user);
                 alert("Login successful!");

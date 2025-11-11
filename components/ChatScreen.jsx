@@ -89,7 +89,7 @@ export default function ChatScreen() {
     const LoadingMessage = () => {
         return (
             <TouchableOpacity style={{ display: 'flex', flexDirection: 'row', gap: 10, opacity: 0.5 }} >
-                <Text style={{ color: 'white' }} >Generating</Text>
+                <Text style={{ color: 'white' }} >Thinking...</Text>
                 <ActivityIndicator size={"small"} color={"white"} />
             </TouchableOpacity>
         )

@@ -46,8 +46,35 @@ export const messageAI = async (text) => {
 
     const { data } = await axios.request(options);
 
-    console.log(data?.result);
+    // console.log(data?.result);
 
     return data?.result || [];
 
+}
+
+
+export const createNewChat = async (userId, title) => {
+    try {
+        const { data } = await axios.post(`${EXPO_PUBLIC_BASE_URL}/api/create-chat`, { userId, title });
+        if (data.success) {
+            return data?.chat;
+        }
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+
+export const pushMessageToDB = async (message) => {
+    try {
+        const { data } = await axios.post(`${EXPO_PUBLIC_BASE_URL}/api/push-message`, { message: message })
+        if (data?.success) {
+            return data?.messages
+        } else {
+            return [];
+        }
+    } catch (error) {
+        console.log(error);
+        return [];
+    }
 }

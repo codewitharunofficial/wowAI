@@ -36,6 +36,7 @@ export const UserProvider = ({ children }) => {
     };
 
     const getUser = async () => {
+        setUser(JSON.parse(await AsyncStorage.getItem("auth")) || null)
         return JSON.parse(await AsyncStorage.getItem("auth")) || null
     }
 

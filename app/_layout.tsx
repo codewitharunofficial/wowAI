@@ -13,6 +13,7 @@ global.Buffer = Buffer;
 import { useColorScheme } from '@/components/useColorScheme';
 import { getUser } from '@/constants/cachedDataCalls';
 import { UserProvider } from '@/providers/User';
+import { StatusBar } from 'react-native';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -81,6 +82,7 @@ function RootLayoutNav() {
           <Stack.Screen name='auth' options={{ headerShown: false }} />
           <Stack.Screen name='profile' options={{ headerShown: false, presentation: "modal" }} />
         </Stack>
+        <StatusBar backgroundColor={'transparent'} />
       </ThemeProvider>
     </UserProvider>
   );
