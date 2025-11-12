@@ -1,6 +1,7 @@
+import socketServcies from "@/constants/SocketServices";
 import { useUser } from "@/providers/User";
 import { router } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     Image,
     KeyboardAvoidingView,
@@ -17,6 +18,8 @@ export default function AuthScreen() {
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     const [step, setStep] = useState("email"); // "email" or "otp"
     const [loading, setLoading] = useState(false);
+    const [isotpExpired, setIsOtpExpired] = useState(false);
+    const [errorSendingOtp, setErrorSendingOtp] = useState(false);
 
     const { login } = useUser();
 
@@ -30,22 +33,10 @@ export default function AuthScreen() {
 
         setLoading(true);
         try {
-            const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/send-otp`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email }),
-            });
-            const data = await res.json();
-            if (data.success) {
-                setStep("otp");
-                otpRefs.current[0]?.focus();
-            } else {
-                alert(data.message || "Failed to send OTP");
-            }
+            socketServcies.emit('send-otp', { email: email });
         } catch (e) {
             alert("Error sending OTP");
-            console.log(e?.message)
-        } finally {
+            console.log(e?.message);
             setLoading(false);
         }
     };
@@ -58,22 +49,11 @@ export default function AuthScreen() {
         }
 
         try {
-            const res = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/verify-otp`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, otp: code }),
-            });
-            const data = await res.json();
-            console.log(data);
-            if (data.success) {
-                login(data?.user);
-                alert("Login successful!");
-                router.replace("/(drawer)")
-            } else {
-                alert(data.message || "Invalid OTP");
-            }
+            setLoading(true);
+            socketServcies.emit('verify-otp', { email: email, otp: otp });
         } catch {
             alert("Error verifying OTP");
+            setLoading(false)
         }
     };
 
@@ -103,6 +83,32 @@ export default function AuthScreen() {
     const handleChangeEmail = async () => {
 
     }
+
+
+    useEffect(() => {
+        socketServcies.on('otp-sent', ({ }) => {
+            setLoading(false);
+            setStep("otp");
+        });
+
+        socketServcies.on('otp-verified', ({ user }) => {
+            setLoading(false);
+            login(user);
+            router.replace("/(drawer)");
+        });
+
+        socketServcies.on('otp-verification-failed', ({ }) => {
+            setIsOtpExpired(true);
+            setLoading(false);
+        });
+
+        socketServcies.on('failed-to-send-otp', ({ }) => {
+            setStep("email");
+            setErrorSendingOtp(true);
+            setLoading(false);
+        });
+
+    }, []);
 
     return (
         <KeyboardAvoidingView
@@ -143,9 +149,15 @@ export default function AuthScreen() {
                             disabled={loading}
                         >
                             <Text style={styles.buttonText}>
-                                {loading ? "Sending..." : "Continue"}
+                                {loading && !errorSendingOtp ? "Sending..." : loading && errorSendingOtp ? "Try Again" : "Continue"}
                             </Text>
                         </TouchableOpacity>
+
+                        {
+                            errorSendingOtp && (
+                                <Text style={{ color: 'red', textAlign: 'center', alignItems: 'center' }}>Error While Getting OTP</Text>
+                            )
+                        }
                     </>
                 ) : (
                     <>
@@ -168,7 +180,7 @@ export default function AuthScreen() {
                             style={[styles.button, { marginTop: 20 }]}
                             onPress={() => handleOtpSubmit()}
                         >
-                            <Text style={styles.buttonText}>Verify OTP</Text>
+                            <Text style={styles.buttonText}>{loading ? "Verifiying..." : "Verify OTP"}</Text>
                         </TouchableOpacity>
 
                         <View style={styles.otpActions}>

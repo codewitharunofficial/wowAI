@@ -1,7 +1,6 @@
+import socketServcies from "@/constants/SocketServices";
 import { useUser } from "@/providers/User";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from "expo-router";
 import React from "react";
@@ -18,54 +17,47 @@ export default function ProfileScreen() {
             description: "Basic access with limited features.",
         };
 
-
     async function handleProfilePress() {
-        let permission = ImagePicker.PermissionStatus;
 
-        if (!permission) {
-            permission = await ImagePicker.getMediaLibraryPermissionsAsync();
-            if (!permission) {
-                Alert.alert("Media Permission is Required");
-                return
-            }
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission required', 'We need media library access to upload a profile photo.');
+            return;
         }
 
-        const file = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: "images",
+            allowsEditing: false,
+            base64: true,
         });
-        if (file) {
 
-            const formData = new FormData();
 
-            formData.append('photo', {
-                type: file.assets[0].mimeType,
-                uri: file.assets[0]?.uri,
-                name: file.assets[0]?.fileName
-            });
-            // formData.append('userId', user?._id);
+        if (result.canceled) return;
 
-            const { data } = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/user/photo/${user?._id}`, formData, {
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+        const asset = result.assets[0];
+        if (!asset || !asset.uri) return;
 
-            if (data?.success) {
-                console.log(data);
-                setUser({ ...user, haveProfile: true });
-                await AsyncStorage.setItem('auth', JSON.stringify({ ...user, haveProfile: true }));
-            }
-        }
+
+        // const base64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: FileSystem.EncodingType.Base64 });
+
+        socketServcies.emit('upload-profile-photo', {
+            userId: user?._id,
+            photo: {
+                type: asset.mimeType || 'image/jpeg',
+                data: asset.base64
+            },
+        });
+
+
     }
+
 
     return (
         <View style={styles.container}>
             {/* Header */}
             <Text style={styles.headerTitle}>My Profile</Text>
 
-            {/* Profile Card */}
             <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.6} style={styles.profileCard}>
                 {user ? (
                     <Image

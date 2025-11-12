@@ -1,3 +1,7 @@
+import { useColorScheme } from '@/components/useColorScheme';
+import { getUser } from '@/constants/cachedDataCalls';
+import socketServcies from '@/constants/SocketServices';
+import { UserProvider } from '@/providers/User';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Buffer } from 'buffer';
@@ -5,15 +9,9 @@ import { useFonts } from 'expo-font';
 import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
+import { StatusBar } from 'react-native';
 import 'react-native-reanimated';
 global.Buffer = Buffer;
-
-
-
-import { useColorScheme } from '@/components/useColorScheme';
-import { getUser } from '@/constants/cachedDataCalls';
-import { UserProvider } from '@/providers/User';
-import { StatusBar } from 'react-native';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -61,6 +59,8 @@ function RootLayoutNav() {
   useEffect(() => {
     getUser().then(user => user ? router.replace("/(drawer)") : router.replace("/auth"));
   }, []);
+
+  useEffect(() => {socketServcies.initializeSocket()});
 
   return (
     <UserProvider>

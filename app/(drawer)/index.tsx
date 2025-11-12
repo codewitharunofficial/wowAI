@@ -1,8 +1,7 @@
 import HomeCarousel from '@/components/HomeCaraousel';
-import socketServcies from '@/constants/SocketServices';
 import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { ExternalPathString, RelativePathString, router } from 'expo-router';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const features = [
@@ -21,13 +20,6 @@ function onItemPress(path: RelativePathString | ExternalPathString) {
 }
 
 export default function HomeScreen() {
-
-    useEffect(() => {
-        socketServcies.initializeSocket();
-        // socketServcies.on('say-hi', async () => {
-        //     console.log("Hi");
-        // })
-    }, [])
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false} >
