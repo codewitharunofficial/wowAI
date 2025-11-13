@@ -1,13 +1,15 @@
-import socketServcies from "@/constants/SocketServices";
 import { useUser } from "@/providers/User";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from "expo-router";
-import React from "react";
-import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import { ActivityIndicator, Alert, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function ProfileScreen() {
     const { user, logout, setUser } = useUser();
+    const [uploading, setUploading] = useState(false);
 
     console.log(user);
 
@@ -18,38 +20,49 @@ export default function ProfileScreen() {
         };
 
     async function handleProfilePress() {
+        let permission = ImagePicker.PermissionStatus;
 
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert('Permission required', 'We need media library access to upload a profile photo.');
-            return;
+        if (!permission) {
+            permission = await ImagePicker.getMediaLibraryPermissionsAsync();
+            if (!permission) {
+                Alert.alert("Media Permission is Required");
+                return
+            }
         }
 
+        const file = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
 
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: "images",
-            allowsEditing: false,
-            base64: true,
+
         });
+        if (file) {
 
+            const formData = new FormData();
 
-        if (result.canceled) return;
+            formData.append('photo', {
+                type: file.assets[0].mimeType,
+                uri: file.assets[0]?.uri,
+                name: file.assets[0]?.fileName
+            });
+            // formData.append('userId', user?._id);
 
-        const asset = result.assets[0];
-        if (!asset || !asset.uri) return;
+            setUploading(true);
 
+            const { data } = await axios.post(`${process.env.EXPO_PUBLIC_BASE_URL}/api/user/photo/${user?._id}`, formData, {
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
 
-        // const base64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: FileSystem.EncodingType.Base64 });
-
-        socketServcies.emit('upload-profile-photo', {
-            userId: user?._id,
-            photo: {
-                type: asset.mimeType || 'image/jpeg',
-                data: asset.base64
-            },
-        });
-
-
+            if (data?.success) {
+                console.log(data);
+                setUser({ ...user, hasProfilePic: true });
+                await AsyncStorage.setItem('auth', JSON.stringify({ ...user, hasProfilePic: true }));
+            }
+            setUploading(false);
+        }
     }
 
 
@@ -59,17 +72,17 @@ export default function ProfileScreen() {
             <Text style={styles.headerTitle}>My Profile</Text>
 
             <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.6} style={styles.profileCard}>
-                {user ? (
+                {!user?.hasProfilePic && uploading ? (
+                    <View style={styles.avatarPlaceholder}>
+                        <ActivityIndicator size={"large"} color={'#fff'} />
+                    </View>
+                ) : (
                     <Image
                         source={{
-                            uri: user?.haveProfile ? `${process.env.EXPO_PUBLIC_BASE_URL}/api/profile/${user?._id}` : "https://cdn-icons-png.flaticon.com/512/4712/4712100.png",
+                            uri: user?.hasProfilePic ? `${process.env.EXPO_PUBLIC_BASE_URL}/api/profile/${user?._id}` : "https://cdn-icons-png.flaticon.com/512/4712/4712100.png",
                         }}
                         style={styles.avatar}
                     />
-                ) : (
-                    <View style={styles.avatarPlaceholder}>
-                        <Ionicons name="person-circle-outline" size={80} color="#94a3b8" />
-                    </View>
                 )}
 
                 <Text style={styles.username}>{user?.name || "Guest User"}</Text>
