@@ -22,7 +22,7 @@ export default function ExploreVoices() {
   const playerRef = useRef(null);
 
 
-  // Play preview using expo-audio
+
   const handlePlayPreview = async (voice) => {
     if (!voice.previewUrl) return alert('No preview available for this voice.');
 
@@ -116,7 +116,6 @@ export default function ExploreVoices() {
 
   return (
     <View style={styles.container}>
-      {/* <Text style={styles.header}>🎙 Explore Voices</Text> */}
 
       <View style={styles.searchContainer}>
         <Ionicons name="search" size={20} color="#64748b" style={{ marginRight: 6 }} />
